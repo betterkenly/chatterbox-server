@@ -27,6 +27,7 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
+  console.log(request);
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   // The outgoing status.
@@ -39,7 +40,11 @@ var requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'text/plain';
+  headers['Content-Type'] = 'json';
+  request.writeHead = function(code, header) {
+    console.log(code);
+    console.log(header);
+  };
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -70,4 +75,4 @@ var defaultCorsHeaders = {
   'access-control-allow-headers': 'content-type, accept',
   'access-control-max-age': 10 // Seconds.
 };
-
+exports.requestHandler = requestHandler;
