@@ -3,7 +3,7 @@ var app = {
 
   //TODO: The current 'handleUsernameClick' function just toggles the class 'friend'
   //to all messages sent by the user
-  server: '127.0.0.1:3000',
+  server: '127.0.0.1:3000/chatterbox/classes/messages',
   username: 'anonymous',
   roomname: 'lobby',
   lastMessageId: 0,
