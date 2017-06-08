@@ -13,24 +13,10 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 
 
+  var messages = [];
 
-  var url = require('url');
-
-  var objectId = 2;
-
-  var messages = [ 
-    {
-      text: 'first message',
-      userName: 'kenly',
-      objectId: 1
-    }
-  ];
-
-  var headers = defaultCorsHeaders;
 
   var url = '/classes/messages';
-  
-  var statusCode = 200;
 
 
   // Make sure to always call response.end() - Node may not send
@@ -44,35 +30,21 @@ this file and include it in basic-server.js so that it actually works.
   var defaultCorsHeaders = {
     'access-control-allow-origin': '*',
     'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'access-control-allow-headers': 'content-type, accept',
+    'access-control-allow-headers': 'content-type, accept, X-parse-Application-Id, X-parse-REST-API-Key',
     'access-control-max-age': 10 // Seconds.
   };
 
-  var buildData = function(request, callback) {
-    var chunkText;
-    request.on('data', function(chunk) {
-      chunkText = chunk.toString();
-    });
-    request.on('end', function(){
-      callback(JSON.parse(chunkText));
-    });
-  };
-
-  var sendResponse = function(response, data, statusCode) {
-    statusCode = statusCode || 200;
-    response.writeHead(statusCode, headers);
-    response.end(JSON.stringify({ results: data }));
-  };
+  var headers = defaultCorsHeaders;
 
   exports.requestHandler = function(request, response) {
 
     console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
     if (request.method === 'GET') {
-      if (request.url === url) {
-        
-        sendResponse(response, messages);
-
+      if (request.url === '/classes/messages') {
+        headers['Content-Type'] = 'application/json';
+        response.writeHead(200, headers);
+        response.end(JSON.stringify({ results: messages }));
       } else {
 
         response.writeHead(404, headers);
@@ -81,18 +53,26 @@ this file and include it in basic-server.js so that it actually works.
       }
 
     } else if (request.method === 'POST') {
+      if (request.url === '/classes/messages') {
 
-        buildData(request, function(message) {
-        messages.push(message);
-        message.objectId = objectId + 1;
-        sendResponse(response, {objectId : objectId + 1}, 201);
-
-      });
-
+        headers['Content-Type'] = 'text/plain';
+      
+        var result = '';
+        request.on('data', function(data) {
+          result += data;
+        });
+        request.on('end', () => {
+          response.writeHead(201, headers);
+          response.end('SENT');     
+          console.log(response);
+        });
+        // console.log('POST', response.finished());
+        messages.push(JSON.parse(result));
+        console.log(messages);
+      } 
     } else if (response.method === 'OPTIONS') {
-
-        sendResponse(response, null);
-
+      request.writeHead(200, headers);
+      request.end('OK');
     }
 
   };
