@@ -30,10 +30,6 @@ this file and include it in basic-server.js so that it actually works.
 
   var url = '/classes/messages';
   
-  console.log('Serving request type ' + request.method + ' for url ' + request.url);
-  
-
-  // The outgoing status.
   var statusCode = 200;
 
 
@@ -52,9 +48,54 @@ this file and include it in basic-server.js so that it actually works.
     'access-control-max-age': 10 // Seconds.
   };
 
-var requestHandler = function(request, response) {
-  
-};
+  var buildData = function(request, callback) {
+    var chunkText;
+    request.on('data', function(chunk) {
+      chunkText = chunk.toString();
+    });
+    request.on('end', function(){
+      callback(JSON.parse(chunkText));
+    });
+  };
+
+  var sendResponse = function(response, data, statusCode) {
+    statusCode = statusCode || 200;
+    response.writeHead(statusCode, headers);
+    response.end(JSON.stringify({ results: data }));
+  };
+
+  exports.requestHandler = function(request, response) {
+
+    console.log('Serving request type ' + request.method + ' for url ' + request.url);
+
+    if (request.method === 'GET') {
+      if (request.url === url) {
+        
+        sendResponse(response, messages);
+
+      } else {
+
+        response.writeHead(404, headers);
+        response.end('NOT FOUND');
+
+      }
+
+    } else if (request.method === 'POST') {
+
+        buildData(request, function(message) {
+        messages.push(message);
+        message.objectId = objectId + 1;
+        sendResponse(response, {objectId : objectId + 1}, 201);
+
+      });
+
+    } else if (response.method === 'OPTIONS') {
+
+        sendResponse(response, null);
+
+    }
+
+  };
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
 // are on different domains, for instance, your chat client.
@@ -65,5 +106,5 @@ var requestHandler = function(request, response) {
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
 
-exports.requestHandler = requestHandler;
+
 
