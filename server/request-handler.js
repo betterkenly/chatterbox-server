@@ -12,11 +12,53 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+
+
+var url = require('url');
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
   // headers and URL, and about the outgoing response, such as its status
+  // Tell the client we are sending them plain text.
+  //
+  // You will need to change this if you are sending something
+  // other than plain text, like JSON or HTML.
+  // headers['Content-Type'] = 'JSON';
+// console.log(request);
+  var results = [];
+  var url = '/classes/messages';
+  if (request.method === 'GET') {
+    
+    if (request.url !== url) {
+      response.writeHead(404, {'Content-Type': 'text/html'});
+      response.write('');
+      response.end();
+
+    } else {
+      let dataObj = {
+        results: results
+      };
+      // console.log(request);
+      response.writeHead(200, {'Content-Type': 'application/json'});
+      response.end(JSON.stringify(dataObj));
+    }
+    
+  } else if (request.method === 'POST') {
+    if (request.url === url) {
+      var data = request._postData;
+      results.push(request._postData);
+      response.writeHead(201, {})
+  }
+    
+    
+
+  
+
+
+  // .writeHead() writes to the request line and headers of the response,
+  // which includes the status and all headers.
   // and content.
   //
   // Documentation for both request and response can be found in the HTTP section at
@@ -26,28 +68,24 @@ var requestHandler = function(request, response) {
   //
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
-  // console.logs in your code.
-  console.log(request);
+  // console.logs in your code. 
+  // url.resolve('http://127.0.0.1:3000', 'classes/messages');
+  
+
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
+  
 
   // The outgoing status.
   var statusCode = 200;
 
   // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
-
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'json';
-  request.writeHead = function(code, header) {
-    console.log(code);
-    console.log(header);
+  var headers = {
+    'access-control-allow-origin': '*',
+    'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'access-control-allow-headers': 'content-type, accept',
+    'access-control-max-age': 10 // Seconds.
   };
 
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
   response.writeHead(statusCode, headers);
 
   // Make sure to always call response.end() - Node may not send
@@ -57,7 +95,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+  response.end('OK');
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -69,10 +107,11 @@ var requestHandler = function(request, response) {
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
-};
+// var defaultCorsHeaders = {
+//   'access-control-allow-origin': '*',
+//   'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+//   'access-control-allow-headers': 'content-type, accept',
+//   'access-control-max-age': 10 // Seconds.
+// };
 exports.requestHandler = requestHandler;
+// module.exports.defaultCorsHeaders = defaultCorsHeaders;
