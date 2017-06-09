@@ -54,20 +54,24 @@ this file and include it in basic-server.js so that it actually works.
 
     } else if (request.method === 'POST') {
       if (request.url === '/classes/messages') {
-
+        
         headers['Content-Type'] = 'text/plain';
       
         var result = '';
         request.on('data', function(data) {
           result += data;
+          // console.log('//////////////', JSON.parse(result));
         });
         request.on('end', () => {
           response.writeHead(201, headers);
-          response.end('SENT');     
-          console.log(response);
+          response.end('RECEIVED');
+          messages.push(JSON.parse(result));
+               
         });
+        // console.log('*****************', result);
         // console.log('POST', response.finished());
-        messages.push(JSON.parse(result));
+        // console.log(messages);
+        console.log('this is the final:', response);
         console.log(messages);
       } 
     } else if (response.method === 'OPTIONS') {
